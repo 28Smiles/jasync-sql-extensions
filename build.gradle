@@ -46,7 +46,7 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 
-build.dependsOn generateGrammarSource
+compileKotlin.dependsOn generateGrammarSource
 
 if ('true' == System.getenv('DEPLOYER')) {
     apply plugin: 'maven'
