@@ -45,3 +45,76 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
+
+if ('true' == System.getenv('DEPLOYER')) {
+    apply plugin: 'maven'
+    apply plugin: 'signing'
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allJava
+    }
+
+    task javadocJar(type: Jar) {
+        dependsOn javadoc
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives jar
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    signing {
+        useGpgCmd()
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                def username = project.hasProperty('mavenUser') ? mavenUser : 'Unknown user'
+                def password = project.hasProperty('mavenPassword') ? mavenPassword : 'Unknown password'
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                    authentication(userName: username, password: password)
+                }
+
+                jar {
+                    from '$rootDir/LICENSE.txt'
+                }
+
+                pom.project {
+                    name project.name
+                    description project.description
+                    url 'https://github.com/28Smiles/jasync-sql-extensions/'
+
+                    scm {
+                        connection 'scm:git@github.com:28Smiles/jasync-sql-extensions.git'
+                        developerConnection 'scm:git@github.com:28Smiles/jasync-sql-extensions.git'
+                        url 'https://github.com/28Smiles/jasync-sql-extensions/'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id '28Smiles'
+                            name 'Leon Camus'
+                            url 'https://github.com/28Smiles'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
