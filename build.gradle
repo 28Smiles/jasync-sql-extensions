@@ -21,6 +21,7 @@ dependencies {
     compile group: "org.postgresql", name: "postgresql", version: "42.2.6"
     compile group: "com.github.jasync-sql", name: "jasync-common", version: "1.0.14"
 
+    compile group: "org.ow2.asm", name: "asm", version: "7.3.1"
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8", version: "1.3.50"
     compile group: "org.jetbrains.kotlin", name: "kotlin-reflect", version: "1.3.50"
 
@@ -48,18 +49,18 @@ compileTestKotlin {
 
 compileKotlin.dependsOn generateGrammarSource
 
-if ('true' == System.getenv('DEPLOYER')) {
-    apply plugin: 'maven'
-    apply plugin: 'signing'
+if ("true" == System.getenv("DEPLOYER")) {
+    apply plugin: "maven"
+    apply plugin: "signing"
 
     task sourcesJar(type: Jar) {
-        classifier = 'sources'
+        classifier = "sources"
         from sourceSets.main.allJava
     }
 
     task javadocJar(type: Jar) {
         dependsOn javadoc
-        classifier = 'javadoc'
+        classifier = "javadoc"
         from javadoc.destinationDir
     }
 
@@ -77,42 +78,42 @@ if ('true' == System.getenv('DEPLOYER')) {
     uploadArchives {
         repositories {
             mavenDeployer {
-                def username = project.hasProperty('mavenUser') ? mavenUser : 'Unknown user'
-                def password = project.hasProperty('mavenPassword') ? mavenPassword : 'Unknown password'
+                def username = project.hasProperty("mavenUser") ? mavenUser : "Unknown user"
+                def password = project.hasProperty("mavenPassword") ? mavenPassword : "Unknown password"
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
                     authentication(userName: username, password: password)
                 }
 
                 jar {
-                    from '$rootDir/LICENSE.txt'
+                    from "$rootDir/LICENSE.txt"
                 }
 
                 pom.project {
                     name project.name
                     description project.description
-                    url 'https://github.com/28Smiles/jasync-sql-extensions/'
+                    url "https://github.com/28Smiles/jasync-sql-extensions/"
 
                     scm {
-                        connection 'scm:git@github.com:28Smiles/jasync-sql-extensions.git'
-                        developerConnection 'scm:git@github.com:28Smiles/jasync-sql-extensions.git'
-                        url 'https://github.com/28Smiles/jasync-sql-extensions/'
+                        connection "scm:git@github.com:28Smiles/jasync-sql-extensions.git"
+                        developerConnection "scm:git@github.com:28Smiles/jasync-sql-extensions.git"
+                        url "https://github.com/28Smiles/jasync-sql-extensions/"
                     }
 
                     licenses {
                         license {
-                            name 'The Apache Software License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution 'repo'
+                            name "The Apache Software License, Version 2.0"
+                            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                            distribution "repo"
                         }
                     }
 
                     developers {
                         developer {
-                            id '28Smiles'
-                            name 'Leon Camus'
-                            url 'https://github.com/28Smiles'
+                            id "28Smiles"
+                            name "Leon Camus"
+                            url "https://github.com/28Smiles"
                         }
                     }
                 }

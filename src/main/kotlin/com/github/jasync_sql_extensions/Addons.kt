@@ -5,7 +5,7 @@ import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.util.length
-import com.github.jasync_sql_extensions.compiler.createCompiledSupplierOrFallback
+import com.github.jasync_sql_extensions.asm.createCompiledConstructor
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.LoadingCache
 import java.util.concurrent.CompletableFuture
@@ -71,7 +71,7 @@ inline fun <reified Bean : Any> ResultSet.mapTo(): List<Bean> {
         val types = Array(length) { parameters[it].type }
 
         ConstructorInformation<Bean>(
-                createCompiledSupplierOrFallback(function),
+                createCompiledConstructor(function),
                 types,
                 Array(length) { types[it].isMarkedNullable },
                 Array(length) { row[parameters[it].name!!.toSnakeCased()] },
