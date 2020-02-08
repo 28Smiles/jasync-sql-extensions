@@ -54,7 +54,7 @@ val mapper: Map<KType, (RowData, Int) -> Any?> = mapOf()
 class ConstructorInformation<Bean>(
         val constructor: Function<Array<Any?>, Bean>,
         val parameterNullable: Array<Boolean>,
-        val parameterColumnIndex: Array<Int>,
+        val parameterColumnIndex: Array<Int?>,
         val args: Array<Any?>
 )
 
@@ -71,7 +71,7 @@ inline fun <reified Bean : Any> ResultSet.mapTo(): List<Bean> {
         ConstructorInformation<Bean>(
                 createCompiledSupplierOrFallback(function),
                 Array(length) { parameters[it].type.isMarkedNullable },
-                Array(length) { row[parameters[it].name!!.toSnakeCased()]!! },
+                Array(length) { row[parameters[it].name!!.toSnakeCased()] },
                 Array(length) { null }
         )
     }.sortedByDescending { it.parameterColumnIndex.size }
@@ -79,7 +79,7 @@ inline fun <reified Bean : Any> ResultSet.mapTo(): List<Bean> {
     return this.map { rowData ->
         val constructor = constructors.map {
                     for (i in it.args.indices) {
-                        it.args[i] = rowData[it.parameterColumnIndex[i]]
+                        it.args[i] = it.parameterColumnIndex[i]?.let { rowData[it] }
                     }
                     it
                 }.first {
