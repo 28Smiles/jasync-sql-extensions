@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Install Postgresql 11
+      - name: Install Postgresql 12
         uses: harmon758/postgresql-action@v1
         with:
           postgresql version: '12'
@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 12
-      - name: Install Postgresql 11
+      - name: Install Postgresql 12
         uses: harmon758/postgresql-action@v1
         with:
           postgresql version: '12'
@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 13
-      - name: Install Postgresql 11
+      - name: Install Postgresql 12
         uses: harmon758/postgresql-action@v1
         with:
           postgresql version: '12'
