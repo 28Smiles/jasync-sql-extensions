@@ -37,7 +37,7 @@ class PostgresExtension : BeforeEachCallback, BeforeAllCallback, AfterAllCallbac
     override fun beforeAll(context: ExtensionContext) {
         val store = context.getStore(ExtensionContext.Namespace.GLOBAL)
 
-        if (isDedicated()) {
+        if (!isDedicated()) {
             println("Did not find a dedicated Database, using embedded postgres...")
             store.put("postgres", startupPostgres())
         }
