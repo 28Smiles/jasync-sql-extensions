@@ -124,3 +124,63 @@ if ("true" == System.getenv("DEPLOYER")) {
         }
     }
 }
+
+apply plugin: "jacoco"
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+task jacoco(dependsOn: [test, jacocoTestReport, jacocoTestCoverageVerification])
+
+jacocoTestReport {
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+
+    doLast {
+        def report = file("${jacoco.reportsDir}/test/jacocoTestReport.xml")
+
+        def parser = new XmlParser()
+        parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+        def results = parser.parse(report)
+
+        def formTuple = {
+            def covered = it."@covered" as Double
+            def missed = it."@missed" as Double
+            return new Tuple2<Double, Double>(covered, missed)
+        }
+
+        def percentage = {
+            def (Double covered, Double missed) = it
+            ((covered / (covered + missed)) * 100).round(2)
+        }
+
+        def counters = results.counter
+        def metrics = [:]
+
+        metrics << [
+                "instruction": formTuple(counters.find { (it."@type" == "INSTRUCTION") }),
+                "branch"     : formTuple(counters.find { (it."@type" == "BRANCH") }),
+                "line"       : formTuple(counters.find { (it."@type" == "LINE") }),
+                "complexity" : formTuple(counters.find { (it."@type" == "COMPLEXITY") }),
+                "method"     : formTuple(counters.find { (it."@type" == "METHOD") }),
+                "class"      : formTuple(counters.find { (it."@type" == "CLASS") })
+        ]
+
+        // remember metrics for later, see build.gradle of nabla (root build.gradle)
+        project.ext.jacocoMetrics = metrics
+
+        logger.quiet("------------------ Code Coverage for " + project + " -----------------------")
+        logger.quiet("HTML Report: ${[jacoco.reportsDir, "test", "html", "index.html"].join(File.separator)}")
+
+        metrics.each {
+            def metric = it.key as String
+            logger.quiet("- ${metric} coverage rate is: ${percentage(it.value)}%")
+        }
+
+        logger.quiet("---------------------------------------------------------------")
+    }
+}

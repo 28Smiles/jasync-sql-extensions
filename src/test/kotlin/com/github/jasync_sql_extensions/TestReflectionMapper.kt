@@ -1,25 +1,21 @@
 package com.github.jasync_sql_extensions
 
 import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.map
 import com.github.jasync_sql_extensions.data.User
 import com.github.jasync_sql_extensions.data.UserExtended
+import com.github.jasync_sql_extensions.mapper.ReflectionMapper
 import extension.PostgresExtension
-import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.time.Instant
 
 /**
  * @author Leon Camus
  * @since 06.02.2020
  */
 @ExtendWith(PostgresExtension::class)
-class TestMapTo {
+class TestReflectionMapper {
     @BeforeEach
     fun prepare(connection: Connection) {
         connection.sendQuery("""
@@ -44,9 +40,12 @@ class TestMapTo {
 
     @Test
     fun testMap(connection: Connection) {
-        val users = connection.sendPreparedStatement("""
+        val resultSet = connection.sendPreparedStatement("""
             SELECT * FROM "user" ORDER BY id
-        """).get().rows.mapTo<User>()
+        """).get().rows
+
+        val mapper = ReflectionMapper(User::class)
+        val users = mapper.map(resultSet)
 
         Assertions.assertEquals(User(1, "alfred", "alf"), users[0])
         Assertions.assertEquals(User(2, "ralf", null), users[1])
@@ -55,9 +54,12 @@ class TestMapTo {
 
     @Test
     fun testMapNotInSelection(connection: Connection) {
-        val users = connection.sendPreparedStatement("""
+        val resultSet = connection.sendPreparedStatement("""
             SELECT * FROM "user" ORDER BY id
-        """).get().rows.mapTo<UserExtended>()
+        """).get().rows
+
+        val mapper = ReflectionMapper(UserExtended::class)
+        val users = mapper.map(resultSet)
 
         Assertions.assertEquals(UserExtended(1, "alfred", "alf"), users[0])
         Assertions.assertEquals(UserExtended(2, "ralf", null), users[1])
