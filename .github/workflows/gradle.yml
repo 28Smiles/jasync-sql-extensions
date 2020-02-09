@@ -19,7 +19,7 @@ jobs:
           postgresql user: root
           postgresql password: root
       - name: Run Tests
-        run: ./gradlew test
+        run: ./gradlew jacoco
         env:
           DEDICATED_TEST_DATABASE_HOST: 127.0.0.1
           DEDICATED_TEST_DATABASE_NAME: jdbi_modules
