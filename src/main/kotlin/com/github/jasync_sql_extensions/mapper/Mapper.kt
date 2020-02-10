@@ -23,30 +23,33 @@ abstract class Mapper<Bean: Any>(clazz: KClass<Bean>) {
                 it.name!!.toSnakeCased(),
                 it.isOptional,
                 it.type.isMarkedNullable,
-                nativeTypes.contains(it.type)
+                primitiveMappers.contains(it.type)
         )
     }.toTypedArray()
 
     val mappers: Array<((RowData, Int) -> Any?)?> = Array(parameters.length) { i ->
         val parameter = parameters[i]
         val type = parameter.type
-        nativeTypes[type] ?: if (type.isMarkedNullable || parameter.isOptional) null else error("""
+        primitiveMappers[type] ?: if (type.isMarkedNullable || parameter.isOptional) null else error("""
             No mapper found for ${parameters[i]},
             but is not marked nullable, nor optional.
         """.trimIndent())
     }
 
-    fun map(resultSet: ResultSet): List<Bean> {
+    fun map(resultSet: ResultSet, prefix: String = ""): List<Bean> {
         val columnNames = resultSet.columnNames().mapIndexed { i, s -> s to i }.toMap()
-
-        val columnIds = Array(parameterInformation.size) { i ->
-            columnNames[parameterInformation[i].snakeCasedName] ?:
+        val columnIds: Array<Int?> = Array(parameterInformation.size) { i ->
+            columnNames[prefix + parameterInformation[i].snakeCasedName] ?:
             if (parameterInformation[i].isNullable || parameterInformation[i].isOptional) null else error("""
                 No column found for ${parameterInformation[i].name}, 
                 and parameter is not marked as optional nor nullable.
             """.trimIndent())
         }
 
+        return doMap(resultSet, columnIds)
+    }
+
+    private fun doMap(resultSet: ResultSet, columnIds: Array<Int?>): List<Bean> {
         // Calculate enabled optionals
         var optionals = 0
         columnIds.zip(mappers).forEachIndexed { index, param ->
@@ -71,7 +74,7 @@ abstract class Mapper<Bean: Any>(clazz: KClass<Bean>) {
     abstract fun construct(rowData: RowData, optionals: Int, baked: Array<(RowData) -> Any?>): Bean
 
     companion object {
-        val nativeTypes: Map<KType, (RowData, Int) -> Any?> = mapOf(
+        val primitiveMappers: Map<KType, (RowData, Int) -> Any?> = mapOf(
                 Long::class.starProjectedType to { rowData, index -> rowData.getLong(index) },
                 Long::class.starProjectedType.withNullability(true) to { rowData, index -> rowData.getLong(index) },
                 Int::class.starProjectedType to { rowData, index -> rowData.getInt(index) },

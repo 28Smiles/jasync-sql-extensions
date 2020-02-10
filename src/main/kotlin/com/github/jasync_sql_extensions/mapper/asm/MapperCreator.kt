@@ -2,7 +2,7 @@ package com.github.jasync_sql_extensions.mapper.asm
 
 import com.github.jasync_sql_extensions.asm.DynamicClassLoader
 import com.github.jasync_sql_extensions.mapper.Mapper
-import com.github.jasync_sql_extensions.mapper.Mapper.Companion.nativeTypes
+import com.github.jasync_sql_extensions.mapper.Mapper.Companion.primitiveMappers
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
@@ -22,15 +22,12 @@ import org.objectweb.asm.Opcodes.IFNONNULL
 import org.objectweb.asm.Opcodes.ILOAD
 import org.objectweb.asm.Opcodes.INVOKEINTERFACE
 import org.objectweb.asm.Opcodes.INVOKESPECIAL
-import org.objectweb.asm.Opcodes.INVOKESTATIC
 import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Opcodes.NEW
 import org.objectweb.asm.Type
-import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmName
@@ -116,7 +113,7 @@ private fun <Bean : Any> create(clazz: KClass<Bean>): Mapper<Bean> {
         // Load
         primaryConstructor.parameters.forEachIndexed { i, parameter ->
             val type = parameter.type
-            val mapper = nativeTypes[parameter.type]
+            val mapper = primitiveMappers[parameter.type]
             if (mapper != null) {
                 visitor.visitVarInsn(ALOAD, 3) // LOAD LAMBDA ARRAY
                 writeIConst(visitor, i) // LOAD OFFSET
