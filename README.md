@@ -32,10 +32,10 @@ This will map the corresponding columns into objects.
 To improve the speed of mapping columns into objects, before mapping the bean is analysed and the most efficient code will be syntesised using ASM. This way the `mapTo<>()` implementation, in most cases, outperforms mapping code created by the kotlin compiler, since some null checks have been ommited.
 The `MappingBenchmark`, mapping a result set of 500000 rows shows the following run times:
 ```
-      Manual mapping of the select took: 61
-      Reflection mapping of the select took: 233
-      Cold ASM mapping of the select took: 86
-      Hot ASM mapping of the select took: 51
+      Manual mapping of the select took: 61 ms
+      Reflection mapping of the select took: 233 ms
+      Cold ASM mapping of the select took: 86 ms
+      Hot ASM mapping of the select took: 51 ms
 ```
 Manual mapping refers to a standard kotlin implementation.
 Reflection mapping refers to a mapping using kotlin reflection.
