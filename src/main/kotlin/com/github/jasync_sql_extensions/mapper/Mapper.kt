@@ -17,7 +17,7 @@ import kotlin.reflect.full.withNullability
  */
 abstract class Mapper<Bean: Any>(clazz: KClass<Bean>) {
     private val parameters = clazz.primaryConstructor!!.parameters
-    private val parameterInformation = parameters.map {
+    val parameterInformation = parameters.map {
         ParameterInformation(
                 it.name!!,
                 it.name!!.toSnakeCased(),

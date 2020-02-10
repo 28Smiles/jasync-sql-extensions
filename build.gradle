@@ -4,7 +4,7 @@ plugins {
 }
 
 group "com.github.28Smiles"
-version "0.1.1"
+version "0.2.0"
 
 repositories {
     jcenter()
@@ -37,7 +37,9 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'benchmark'
+    }
     testLogging {
         exceptionFormat = 'full'
     }

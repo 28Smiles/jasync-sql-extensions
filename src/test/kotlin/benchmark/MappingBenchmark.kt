@@ -3,12 +3,13 @@ package benchmark
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync_sql_extensions.mapTo
-import com.github.jasync_sql_extensions.mapper.ReflectionMapper
+import com.github.jasync_sql_extensions.mapper.reflection.ReflectionMapper
 import com.github.jasync_sql_extensions.sendPreparedStatement
 import extension.PostgresExtension
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.stream.LongStream
@@ -18,6 +19,7 @@ import kotlin.streams.toList
  * @author Leon Camus
  * @since 06.02.2020
  */
+@Tag("benchmark")
 @ExtendWith(PostgresExtension::class)
 class MappingBenchmark {
     data class User(val id: Long, val name: String, val shortName: String?)

@@ -1,6 +1,7 @@
-package com.github.jasync_sql_extensions.mapper
+package com.github.jasync_sql_extensions.mapper.reflection
 
 import com.github.jasync.sql.db.RowData
+import com.github.jasync_sql_extensions.mapper.Mapper
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
@@ -8,7 +9,7 @@ import kotlin.reflect.full.primaryConstructor
  * @author Leon Camus
  * @since 09.02.2020
  */
-class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
+internal class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
     val primaryConstructor = clazz.primaryConstructor!!
     val constructor = clazz.java.constructors.find { constructor ->
         constructor.parameters.any {
@@ -20,7 +21,9 @@ class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
         if (constructor != null) {
             val args = Array(baked.size + 2) { index ->
                 if (index < baked.size) {
-                    baked[index](rowData)
+                    baked[index](rowData) ?:
+                        if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
+                        else throw NullPointerException()
                 } else {
                     if (index == baked.size) {
                         optionals
@@ -34,7 +37,9 @@ class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
             return constructor.newInstance(*args) as Bean
         } else {
             val args = Array(baked.size) { index ->
-                baked[index](rowData)
+                baked[index](rowData) ?:
+                if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
+                else throw NullPointerException()
             }
             return primaryConstructor.call(*args)
         }
