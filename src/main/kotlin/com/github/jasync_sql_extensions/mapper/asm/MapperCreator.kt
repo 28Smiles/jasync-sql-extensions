@@ -224,6 +224,7 @@ private fun <Bean : Any> create(clazz: KClass<Bean>): Mapper<Bean> {
     val instance = classLoader.defineClass(className, classWriter.toByteArray())!!
             .getConstructor(KClass::class.java).newInstance(clazz)
 
+    @Suppress("UNCHECKED_CAST")
     return instance as Mapper<Bean>
 }
 

@@ -29,6 +29,8 @@ class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
                     }
                 }
             }
+
+            @Suppress("UNCHECKED_CAST")
             return constructor.newInstance(*args) as Bean
         } else {
             val args = Array(baked.size) { index ->

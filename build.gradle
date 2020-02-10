@@ -3,7 +3,7 @@ plugins {
     id "antlr"
 }
 
-group "com.github.28Smiles.jasync-sql-extensions"
+group "com.github.28Smiles"
 version "0.1.1"
 
 repositories {

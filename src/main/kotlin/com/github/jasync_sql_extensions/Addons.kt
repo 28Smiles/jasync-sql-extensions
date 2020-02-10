@@ -49,5 +49,6 @@ fun String.toSnakeCased(): String {
 }
 
 inline fun <reified Bean : Any> ResultSet.mapTo(prefix: String = ""): List<Bean> {
+    @Suppress("UNCHECKED_CAST")
     return cache[Bean::class].map(this, prefix) as List<Bean>
 }
