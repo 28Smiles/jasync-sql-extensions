@@ -49,3 +49,6 @@ Using the `SmallMappingBenchmark`, we get a impression of the initial overhead:
       Cold ASM mapping of the select took: 31021 us
       Hot ASM mapping of the select took: 147 us
 ```
+
+## Stabillity
+This libary is testet, but it most certainly contains bugs and has several limitations, use with caution.
