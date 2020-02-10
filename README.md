@@ -20,7 +20,8 @@
                 id = 24,
                 name = "Homer"
             ) 
-    )).get()
+        )
+    )
 ```
 To map a result set, use the `mapTo<>()` extension.
 ```
