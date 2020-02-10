@@ -43,7 +43,7 @@ Manual mapping refers to a standard kotlin implementation.
 Reflection mapping refers to a mapping using kotlin reflection.
 Cold ASM mapping refers to code being synthesized and then executed.
 Hot ASM mapping refers code being cached and executed.
-Using the `SmallMappingBenchmark`, we get a impression of the initial overhead:
+Using the `SmallMappingBenchmark`, mapping 30 beans, we get a impression of the initial overhead:
 ```
       Manual mapping of the select took: 1120 us
       Reflection mapping of the select took: 55562 us
