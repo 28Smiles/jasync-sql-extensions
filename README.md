@@ -1,5 +1,6 @@
 [![codecov](https://codecov.io/gh/28Smiles/jasync-sql-extensions/branch/master/graph/badge.svg)](https://codecov.io/gh/28Smiles/jasync-sql-extensions)
 [![Apache License V.2](https://img.shields.io/badge/license-Apache%20V.2-blue.svg)](https://github.com/jasync-sql/jasync-sql/blob/master/LICENSE)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.28Smiles/jasync-sql-extensions/badge.svg)](https://mvnrepository.com/artifact/com.github.28Smiles/jasync-sql-extensions)
 
 # jasync-sql-extensions
 [jasync-sql-extensions](https://github.com/28Smiles/jasync-sql-extensions) is a simple Extension of [jasync-sql](https://github.com/jasync-sql/jasync-sql). The current Features include:
