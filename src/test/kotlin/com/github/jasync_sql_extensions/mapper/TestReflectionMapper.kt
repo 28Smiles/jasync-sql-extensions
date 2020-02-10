@@ -1,11 +1,15 @@
 package com.github.jasync_sql_extensions.mapper
 
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.RowData
 import com.github.jasync_sql_extensions.data.JavaUser
+import com.github.jasync_sql_extensions.data.Lang
 import com.github.jasync_sql_extensions.data.Numbers
 import com.github.jasync_sql_extensions.data.Unmappable
 import com.github.jasync_sql_extensions.data.User
 import com.github.jasync_sql_extensions.data.UserExtended
+import com.github.jasync_sql_extensions.data.UserInstant
+import com.github.jasync_sql_extensions.data.UserJson
 import com.github.jasync_sql_extensions.data.UserUnknown
 import com.github.jasync_sql_extensions.mapTo
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
@@ -14,11 +18,14 @@ import com.github.jasync_sql_extensions.mapper.reflection.ReflectionMapper
 import com.github.jasync_sql_extensions.mapper.reflection.ReflectionMapperCreator
 import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
+import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.time.Instant
+import kotlin.reflect.full.starProjectedType
 
 /**
  * @author Leon Camus
@@ -95,7 +102,7 @@ class TestReflectionMapper {
         }
 
         @Test
-        fun testUnmappableBean(connection: Connection) {
+        fun testUnmappableBean() {
             Assertions.assertThrows(NullPointerException::class.java) {
                 ReflectionMapper(Unmappable::class)
             }
@@ -235,6 +242,96 @@ class TestReflectionMapper {
                     ),
                     numbers[0]
             )
+        }
+    }
+
+    @Nested
+    inner class CustomMapper {
+        @BeforeEach
+        fun prepare(connection: Connection) {
+            connection.sendQuery("""
+                CREATE TABLE "user" (
+                    id BIGSERIAL NOT NULL,
+                    created TIMESTAMP NOT NULL,
+                    short_name VARCHAR(128),
+                    
+                    PRIMARY KEY (id)
+                )
+            """).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (created, short_name) VALUES (?, ?)
+            """, listOf(Instant.ofEpochMilli(1561566156L), "alf")).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (created, short_name) VALUES (?, ?)
+            """, listOf(Instant.ofEpochMilli(15615156L), null)).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (created, short_name) VALUES (?, ?)
+            """, listOf(Instant.ofEpochMilli(156156645156L), "bert")).get()
+        }
+
+        @Test
+        fun testMap(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT * FROM "user" ORDER BY id
+            """).get().rows
+
+            Mapper.register(Instant::class.starProjectedType) { rowData: RowData, index: Int ->
+                Instant.ofEpochMilli(rowData.getDate(index)!!.toDateTime(DateTimeZone.UTC).millis)
+            }
+            val users = resultSet.mapTo<UserInstant>(
+                    mapperCreator = mapperCreator
+            )
+
+            Assertions.assertEquals(
+                    UserInstant(1, Instant.ofEpochMilli(1561566156L), "alf"),
+                    users[0])
+            Assertions.assertEquals(
+                    UserInstant(2, Instant.ofEpochMilli(15615156L), null),
+                    users[1])
+            Assertions.assertEquals(
+                    UserInstant(3, Instant.ofEpochMilli(156156645156L), "bert"),
+                    users[2])
+        }
+    }
+
+    @Nested
+    inner class Json {
+        @BeforeEach
+        fun prepare(connection: Connection) {
+            connection.sendQuery("""
+                CREATE TABLE "user" (
+                    id BIGSERIAL NOT NULL,
+                    name JSON NOT NULL,
+                    short_name VARCHAR(128),
+                    
+                    PRIMARY KEY (id)
+                )
+            """).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (name, short_name) VALUES (?, ?)
+            """, listOf("{ \"de\": \"Alfred\", \"en\": \"Alf\" }", "alf")).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (name, short_name) VALUES (?, ?)
+            """, listOf("{ \"de\": \"Ralf\", \"en\": \"rulf\" }", null)).get()
+            connection.sendPreparedStatement("""
+                INSERT INTO "user" (name, short_name) VALUES (?, ?)
+            """, listOf("{ \"de\": \"Berthold\", \"en\": \"Bert\" }", "bert")).get()
+        }
+
+        @Test
+        fun testMap(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT * FROM "user" ORDER BY id
+            """).get().rows
+
+            Mapper.register(JsonMapper)
+            val users = resultSet.mapTo<UserJson>(
+                    mapperCreator = mapperCreator
+            )
+
+            Assertions.assertEquals(UserJson(1, Lang("Alfred", "Alf"), "alf"), users[0])
+            Assertions.assertEquals(UserJson(2, Lang("Ralf", "rulf"), null), users[1])
+            Assertions.assertEquals(UserJson(3, Lang("Berthold", "Bert"), "bert"), users[2])
         }
     }
 }

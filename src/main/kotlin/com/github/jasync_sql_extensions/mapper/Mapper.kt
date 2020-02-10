@@ -30,8 +30,7 @@ abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
     val mappers: Array<((RowData, Int) -> Any?)?> = Array(parameters.length) { i ->
         val parameter = parameters[i]
         val type = parameter.type
-        primitiveMappers[type]
-                ?: if (type.isMarkedNullable || parameter.isOptional) null
+        findMapper(type) ?: if (type.isMarkedNullable || parameter.isOptional) null
                 else throw NullPointerException("No mapper found for ${parameters[i]}, " +
                         "but is not marked nullable, nor optional.")
     }
@@ -74,7 +73,7 @@ abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
     abstract fun construct(rowData: RowData, optionals: Int, baked: Array<(RowData) -> Any?>): Bean
 
     companion object {
-        val primitiveMappers: Map<KType, (RowData, Int) -> Any?> = mapOf(
+        private val primitiveMappers: Map<KType, (RowData, Int) -> Any?> = mapOf(
                 Long::class.starProjectedType to { rowData, index -> rowData.getLong(index) },
                 Long::class.starProjectedType.withNullability(true) to { rowData, index -> rowData.getLong(index) },
                 Int::class.starProjectedType to { rowData, index -> rowData.getInt(index) },
@@ -92,5 +91,22 @@ abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
                 DateTime::class.starProjectedType to { rowData, index -> rowData.getDate(index) },
                 DateTime::class.starProjectedType.withNullability(true) to { rowData, index -> rowData.getDate(index) }
         )
+
+        private val customMappers: MutableMap<KType, (RowData, Int) -> Any?> = mutableMapOf()
+        private val customComplexMappers: MutableList<ComplexMapper> = mutableListOf()
+
+        fun findMapper(type: KType): ((RowData, Int) -> Any?)? = primitiveMappers[type]
+                ?: customMappers[type]
+                ?: customComplexMappers.find { it.canMap(type) }?.let { { rowData: RowData, index: Int ->
+                    it.map(type, rowData, index)
+                } }
+
+        fun register(type: KType, mapper: (RowData, Int) -> Any?) {
+            customMappers[type] = mapper
+        }
+
+        fun register(mapper: ComplexMapper) {
+            customComplexMappers.add(mapper)
+        }
     }
 }

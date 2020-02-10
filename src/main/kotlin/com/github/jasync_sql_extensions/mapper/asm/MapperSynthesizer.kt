@@ -129,7 +129,7 @@ internal object MapperSynthesizer {
         // Load
         primaryConstructor.parameters.forEachIndexed { i, parameter ->
             val type = parameter.type
-            val mapper = Mapper.primitiveMappers[parameter.type]
+            val mapper = Mapper.findMapper(parameter.type)
             if (mapper != null) {
                 visitor.visitVarInsn(Opcodes.ALOAD, 3) // LOAD LAMBDA ARRAY
                 visitor.visitIConst(i) // LOAD OFFSET
