@@ -4,6 +4,8 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync_sql_extensions.data.JavaUser
 import com.github.jasync_sql_extensions.data.Numbers
 import com.github.jasync_sql_extensions.data.User
+import com.github.jasync_sql_extensions.data.UserExtended
+import com.github.jasync_sql_extensions.data.UserUnknown
 import com.github.jasync_sql_extensions.mapTo
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
 import com.google.common.util.concurrent.UncheckedExecutionException
@@ -73,6 +75,38 @@ class TestAsmMapper {
                         mapperCreator = mapperCreator
                 )
             }
+        }
+
+        @Test
+        fun testMapOptional(connection: Connection) {
+            // Optionals name is not in selection
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT * FROM "user" ORDER BY id
+            """).get().rows
+
+            val users = resultSet.mapTo<UserExtended>(
+                    mapperCreator = mapperCreator
+            )
+
+            Assertions.assertEquals(UserExtended(1, "alfred", "alf"), users[0])
+            Assertions.assertEquals(UserExtended(2, "ralf", null), users[1])
+            Assertions.assertEquals(UserExtended(3, "bertold", "bert"), users[2])
+        }
+
+        @Test
+        fun testMapUnknownOptional(connection: Connection) {
+            // Optionals name is in selection, but not mappable
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT * FROM "user" ORDER BY id
+            """).get().rows
+
+            val users = resultSet.mapTo<UserUnknown>(
+                    mapperCreator = mapperCreator
+            )
+
+            Assertions.assertEquals(UserUnknown(1, "alfred"), users[0])
+            Assertions.assertEquals(UserUnknown(2, "ralf"), users[1])
+            Assertions.assertEquals(UserUnknown(3, "bertold"), users[2])
         }
 
         @Test
