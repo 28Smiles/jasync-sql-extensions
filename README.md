@@ -51,4 +51,4 @@ Using the `SmallMappingBenchmark`, we get a impression of the initial overhead:
 ```
 
 ## Stabillity
-This libary is testet, but it most certainly contains bugs and has several limitations, use with caution.
+This libary is tested, but it most certainly contains bugs and has several limitations, use with caution.
