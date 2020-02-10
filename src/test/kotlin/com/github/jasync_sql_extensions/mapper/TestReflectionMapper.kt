@@ -3,11 +3,14 @@ package com.github.jasync_sql_extensions.mapper
 import com.github.jasync.sql.db.Connection
 import com.github.jasync_sql_extensions.data.JavaUser
 import com.github.jasync_sql_extensions.data.Numbers
+import com.github.jasync_sql_extensions.data.Unmappable
 import com.github.jasync_sql_extensions.data.User
 import com.github.jasync_sql_extensions.data.UserExtended
 import com.github.jasync_sql_extensions.data.UserUnknown
 import com.github.jasync_sql_extensions.mapTo
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
+import com.github.jasync_sql_extensions.mapper.asm.MapperSynthesizer
+import com.github.jasync_sql_extensions.mapper.reflection.ReflectionMapper
 import com.github.jasync_sql_extensions.mapper.reflection.ReflectionMapperCreator
 import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
@@ -86,6 +89,26 @@ class TestReflectionMapper {
 
             Assertions.assertThrows(NullPointerException::class.java) {
                 resultSet.mapTo<UserExtended>(
+                        mapperCreator = mapperCreator
+                )
+            }
+        }
+
+        @Test
+        fun testUnmappableBean(connection: Connection) {
+            Assertions.assertThrows(NullPointerException::class.java) {
+                ReflectionMapper(Unmappable::class)
+            }
+        }
+
+        @Test
+        fun testUnmappableColumn(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT id FROM "user" ORDER BY id
+            """).get().rows
+
+            Assertions.assertThrows(NullPointerException::class.java) {
+                resultSet.mapTo<User>(
                         mapperCreator = mapperCreator
                 )
             }

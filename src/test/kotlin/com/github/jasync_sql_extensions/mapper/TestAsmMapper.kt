@@ -3,11 +3,13 @@ package com.github.jasync_sql_extensions.mapper
 import com.github.jasync.sql.db.Connection
 import com.github.jasync_sql_extensions.data.JavaUser
 import com.github.jasync_sql_extensions.data.Numbers
+import com.github.jasync_sql_extensions.data.Unmappable
 import com.github.jasync_sql_extensions.data.User
 import com.github.jasync_sql_extensions.data.UserExtended
 import com.github.jasync_sql_extensions.data.UserUnknown
 import com.github.jasync_sql_extensions.mapTo
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
+import com.github.jasync_sql_extensions.mapper.asm.MapperSynthesizer
 import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
 import org.junit.jupiter.api.Assertions
@@ -15,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.lang.reflect.InvocationTargetException
+import java.util.concurrent.ExecutionException
 
 /**
  * @author Leon Camus
@@ -85,6 +89,30 @@ class TestAsmMapper {
 
             Assertions.assertThrows(NullPointerException::class.java) {
                 resultSet.mapTo<UserExtended>(
+                        mapperCreator = mapperCreator
+                )
+            }
+        }
+
+        @Test
+        fun testUnmappableBean(connection: Connection) {
+            try {
+                MapperSynthesizer.synthesize(Unmappable::class)
+            } catch (e: InvocationTargetException) {
+                Assertions.assertEquals(NullPointerException::class, e.targetException::class)
+                return
+            }
+            Assertions.fail<String>("No exception thrown!")
+        }
+
+        @Test
+        fun testUnmappableColumn(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT id FROM "user" ORDER BY id
+            """).get().rows
+
+            Assertions.assertThrows(NullPointerException::class.java) {
+                resultSet.mapTo<User>(
                         mapperCreator = mapperCreator
                 )
             }

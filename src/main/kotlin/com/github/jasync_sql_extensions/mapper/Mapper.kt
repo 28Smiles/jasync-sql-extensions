@@ -15,7 +15,7 @@ import kotlin.reflect.full.withNullability
  * @author Leon Camus
  * @since 08.02.2020
  */
-abstract class Mapper<Bean: Any>(clazz: KClass<Bean>) {
+abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
     private val parameters = clazz.primaryConstructor!!.parameters
     val parameterInformation = parameters.map {
         ParameterInformation(
@@ -30,20 +30,20 @@ abstract class Mapper<Bean: Any>(clazz: KClass<Bean>) {
     val mappers: Array<((RowData, Int) -> Any?)?> = Array(parameters.length) { i ->
         val parameter = parameters[i]
         val type = parameter.type
-        primitiveMappers[type] ?: if (type.isMarkedNullable || parameter.isOptional) null else error("""
-            No mapper found for ${parameters[i]},
-            but is not marked nullable, nor optional.
-        """.trimIndent())
+        primitiveMappers[type]
+                ?: if (type.isMarkedNullable || parameter.isOptional) null
+                else throw NullPointerException("No mapper found for ${parameters[i]}, " +
+                        "but is not marked nullable, nor optional.")
     }
 
     fun map(resultSet: ResultSet, prefix: String = ""): List<Bean> {
         val columnNames = resultSet.columnNames().mapIndexed { i, s -> s to i }.toMap()
         val columnIds: Array<Int?> = Array(parameterInformation.size) { i ->
-            columnNames[prefix + parameterInformation[i].snakeCasedName] ?:
-            if (parameterInformation[i].isNullable || parameterInformation[i].isOptional) null else error("""
-                No column found for ${parameterInformation[i].name}, 
-                and parameter is not marked as optional nor nullable.
-            """.trimIndent())
+            columnNames[prefix + parameterInformation[i].snakeCasedName]
+                    ?: if (parameterInformation[i].isNullable || parameterInformation[i].isOptional) null
+                    else throw NullPointerException(
+                            "No column found for ${parameterInformation[i].name}" +
+                                    " and parameter is not marked as optional nor nullable.")
         }
 
         return doMap(resultSet, columnIds)

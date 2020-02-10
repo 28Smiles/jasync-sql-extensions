@@ -73,7 +73,7 @@ internal object MapperSynthesizer {
         visitor.visitVarInsn(Opcodes.ALOAD, 1)
         visitor.visitMethodInsn(
                 Opcodes.INVOKESPECIAL,
-                Mapper::class.java.name.replace('.', '/'),
+                Type.getInternalName(Mapper::class.java),
                 "<init>",
                 "(Lkotlin/reflect/KClass;)V",
                 false
