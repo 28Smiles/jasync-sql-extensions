@@ -10,7 +10,8 @@ import kotlin.reflect.full.primaryConstructor
  * @since 09.02.2020
  */
 internal class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(clazz) {
-    val primaryConstructor = clazz.primaryConstructor!!
+    val primaryConstructor = clazz.primaryConstructor
+            ?: throw NullPointerException("No primary constructor found, is $clazz not a Kotlin Class?")
     val constructor = clazz.java.constructors.find { constructor ->
         constructor.parameters.any {
             it.type.name == "kotlin.jvm.internal.DefaultConstructorMarker"
@@ -21,9 +22,9 @@ internal class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(
         if (constructor != null) {
             val args = Array(baked.size + 2) { index ->
                 if (index < baked.size) {
-                    baked[index](rowData) ?:
-                        if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
-                        else throw NullPointerException()
+                    baked[index](rowData)
+                            ?: if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
+                            else throw NullPointerException()
                 } else {
                     if (index == baked.size) {
                         optionals
@@ -37,9 +38,9 @@ internal class ReflectionMapper<Bean : Any>(clazz: KClass<Bean>) : Mapper<Bean>(
             return constructor.newInstance(*args) as Bean
         } else {
             val args = Array(baked.size) { index ->
-                baked[index](rowData) ?:
-                if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
-                else throw NullPointerException()
+                baked[index](rowData)
+                        ?: if (parameterInformation[index].isNullable || parameterInformation[index].isOptional) null
+                        else throw NullPointerException()
             }
             return primaryConstructor.call(*args)
         }

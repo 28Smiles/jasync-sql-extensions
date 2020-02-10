@@ -1,10 +1,12 @@
 package com.github.jasync_sql_extensions.mapper
 
 import com.github.jasync.sql.db.Connection
+import com.github.jasync_sql_extensions.data.JavaUser
 import com.github.jasync_sql_extensions.data.Numbers
 import com.github.jasync_sql_extensions.data.User
 import com.github.jasync_sql_extensions.mapTo
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
+import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -88,6 +90,19 @@ class TestAsmMapper {
             Assertions.assertEquals(User(1, "alfred", "alf"), users[0])
             Assertions.assertEquals(User(2, "ralf", null), users[1])
             Assertions.assertEquals(User(3, "bertold", "bert"), users[2])
+        }
+
+        @Test
+        fun testJavaUser(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT * FROM "user" ORDER BY id
+            """).get().rows
+
+            Assertions.assertThrows(UncheckedExecutionException::class.java) {
+                resultSet.mapTo<JavaUser>(
+                        mapperCreator = AsmMapperCreator
+                )
+            }
         }
     }
 

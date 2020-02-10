@@ -21,7 +21,8 @@ import kotlin.reflect.jvm.javaType
 internal object MapperSynthesizer {
     fun <Bean : Any> synthesize(clazz: KClass<Bean>): Mapper<Bean> {
         val className = "${clazz.java.name}\$Mapper"
-        val primaryConstructor = clazz.primaryConstructor!!
+        val primaryConstructor = clazz.primaryConstructor
+                ?: throw NullPointerException("No primary constructor found, is $clazz not a Kotlin Class?")
         val defaultConstructor = clazz.java.constructors.find { constructor ->
             constructor.parameters.any {
                 it.type.name == "kotlin.jvm.internal.DefaultConstructorMarker"
