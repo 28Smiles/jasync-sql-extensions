@@ -30,6 +30,12 @@ To map a result set, use the `mapTo<>()` extension.
 ```
 This will map the corresponding columns into objects.
 
+### Use in your project
+Add this to your `build.gradle` file
+```
+  compile group: "com.github.28Smiles", name: "jasync-sql-extensions", version: "0.1.1"
+```
+
 ## Speed
 To improve the speed of mapping columns into objects, before mapping the bean is analysed and the most efficient code will be syntesised using ASM. This way the `mapTo<>()` implementation, in most cases, outperforms mapping code created by the kotlin compiler, since some null checks have been ommited.
 The `MappingBenchmark`, mapping a result set of 500000 rows shows the following run times:
