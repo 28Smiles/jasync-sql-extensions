@@ -78,6 +78,19 @@ class TestAsmMapper {
         }
 
         @Test
+        fun testMapNPEOptional(connection: Connection) {
+            val resultSet = connection.sendPreparedStatement("""
+                SELECT id, short_name, alt_name AS "name" FROM "user" ORDER BY id
+            """).get().rows
+
+            Assertions.assertThrows(NullPointerException::class.java) {
+                resultSet.mapTo<UserExtended>(
+                        mapperCreator = mapperCreator
+                )
+            }
+        }
+
+        @Test
         fun testMapOptional(connection: Connection) {
             // Optionals name is not in selection
             val resultSet = connection.sendPreparedStatement("""
