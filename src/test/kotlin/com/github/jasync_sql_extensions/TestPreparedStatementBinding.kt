@@ -3,6 +3,7 @@ package com.github.jasync_sql_extensions
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.length
+import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
 import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
@@ -111,6 +112,24 @@ class TestPreparedStatementBinding {
                     "b" to TestObject2(null)
             ))
         }
+    }
+
+    @Test
+    fun positionalBinding(connection: Connection) {
+        try {
+            connection.sendPreparedStatement("""
+                SELECT ?, (:b.a.nabla)::timestamp, :b.a.foo
+            """.trimIndent(), mapOf(
+                    "b" to TestObject2(null)
+            ))
+        } catch (e: Exception) {
+            Assertions.assertEquals(
+                    IllegalArgumentException::class,
+                    e.cause!!::class
+            )
+            return
+        }
+        Assertions.fail<String>("No exception encountered")
     }
 
     data class TestObject2(val a: TestObject1?)
