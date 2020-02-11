@@ -68,6 +68,24 @@ class TestPreparedStatementBinding {
         )
     }
 
+    @Test
+    fun beanBindingUncached(connection: Connection) {
+        val queryResult: QueryResult = connection.sendUncachedPreparedStatement("""
+            SELECT :b.number, (:b.nabla)::timestamp, :b.foo
+        """.trimIndent(), mapOf(
+                "b" to TestObject1(42, "bar", Instant.ofEpochMilli(100000000L))
+        )).get()
+
+        Assertions.assertEquals(1, queryResult.rows.length)
+        Assertions.assertEquals(3, queryResult.rows[0].length)
+        Assertions.assertEquals(42, queryResult.rows[0][0])
+        Assertions.assertEquals("bar", queryResult.rows[0][2])
+        Assertions.assertEquals(
+                100000000L,
+                queryResult.rows[0].getDate(1)?.toDateTime(DateTimeZone.UTC)?.millis
+        )
+    }
+
     data class TestObject1(val number: Long, val foo: String, val nabla: Instant)
 
     @Test
