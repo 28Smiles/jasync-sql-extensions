@@ -18,8 +18,6 @@ import kotlin.reflect.KClass
 object AsmMapperCreator: MapperCreator {
     private val cache: LoadingCache<KClass<out Any>, Mapper<out Any>> =
             CacheBuilder.newBuilder()
-                    .maximumSize(4096)
-                    .expireAfterWrite(10, TimeUnit.MINUTES)
                     .build(object : CacheLoader<KClass<out Any>, Mapper<out Any>>() {
                         override fun load(key: KClass<out Any>): Mapper<out Any> {
                             return MapperSynthesizer.synthesize(key)
