@@ -33,7 +33,7 @@ This will map the corresponding columns into objects.
 ### Use in your project
 Add this to your `build.gradle` file
 ```
-  compile group: "com.github.28Smiles", name: "jasync-sql-extensions", version: "0.1.1"
+  compile group: "com.github.28Smiles", name: "jasync-sql-extensions", version: "0.3.1"
 ```
 
 ## Speed
