@@ -5,8 +5,13 @@
 # jasync-sql-extensions
 [jasync-sql-extensions](https://github.com/28Smiles/jasync-sql-extensions) is a simple Extension of [jasync-sql](https://github.com/jasync-sql/jasync-sql). The current Features include:
  - Named argument binding
- - Data Class Mapping
- 
+   - List binding
+   - Bean binding
+   - Json binding
+ - Data class mapping
+   - Json mapping
+   - Custom mapper support
+
  ## Getting Started
 [jasync-sql-extensions](https://github.com/28Smiles/jasync-sql-extensions) is based upon extension functions. So create a query using named bindings start like this:
 ```
