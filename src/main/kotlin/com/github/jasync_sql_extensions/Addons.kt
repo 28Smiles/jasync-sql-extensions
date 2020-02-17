@@ -38,13 +38,19 @@ fun Connection.sendPreparedStatement(
         }
     }
 
+    assert(convertedArgs.size == queryParts.size - 1) {
+        // Will Hopefully never be thrown
+        throw IllegalArgumentException("More arguments where converted than there is space in the query!" +
+                " This is an error in the library, please report.")
+    }
+
     return this.sendPreparedStatement(
             convertedArgs.zip(queryParts).joinToString(separator = "") { (argument, queryPart) ->
                 when (argument) {
                     is Collection<*> -> queryPart + "( ${argument.joinToString(separator = ",") { " ? " }} )"
                     else -> "$queryPart ? "
                 }
-            },
+            } + queryParts.last(),
             convertedArgs.flatMap {
                 when (it) {
                     is Collection<*> -> it

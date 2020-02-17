@@ -41,6 +41,7 @@ object SqlPreprocessor : CacheLoader<String, Pair<Array<String>, (Map<String, An
 
             token = tokenizer.nextToken()
         }
+        sqlPartsOut.add(sqlOutBuffer.toString())
 
         return sqlPartsOut.toTypedArray() to { bindings ->
             routes.map { route ->

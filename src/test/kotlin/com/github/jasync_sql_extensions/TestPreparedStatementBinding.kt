@@ -124,16 +124,17 @@ class TestPreparedStatementBinding {
     @Test
     fun listBinding(connection: Connection) {
         val queryResult: QueryResult = connection.sendPreparedStatement("""
-            SELECT 42 in :list0, 156 in :list1
+            SELECT 42 in :list0, 156 in :list1, 156
         """, mapOf(
                 "list0" to listOf(13, 156, 156, 1),
                 "list1" to listOf(45, 156, 156, 42)
         )).get()
 
         Assertions.assertEquals(1, queryResult.rows.length)
-        Assertions.assertEquals(2, queryResult.rows[0].length)
+        Assertions.assertEquals(3, queryResult.rows[0].length)
         Assertions.assertEquals( false, queryResult.rows[0][0])
         Assertions.assertEquals( true, queryResult.rows[0][1])
+        Assertions.assertEquals( 156, queryResult.rows[0][2])
     }
 
     @Test
