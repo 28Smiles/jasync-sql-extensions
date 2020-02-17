@@ -1,5 +1,6 @@
-package com.github.jasync_sql_extensions
+package com.github.jasync_sql_extensions.binding
 
+import com.github.jasync_sql_extensions.SqlLexer
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
@@ -14,32 +15,34 @@ import kotlin.reflect.full.memberProperties
  * @author Leon Camus
  * @since 07.02.2020
  */
-object SqlPreprocessor : CacheLoader<String, Pair<String, (Map<String, Any?>) -> List<Any?>>>() {
+object SqlPreprocessor : CacheLoader<String, Pair<Array<String>, (Map<String, Any?>) -> List<Any?>>>() {
     private val SPLITTER = "(\\.)|(\\?\\.)|([^[.|?.]]+)".toRegex()
     private val SAFE_CALL = "?."
     private val CALL = "."
 
-    override fun load(key: String): Pair<String, (Map<String, Any?>) -> List<Any?>> {
+    override fun load(key: String): Pair<Array<String>, (Map<String, Any?>) -> List<Any?>> {
         val tokenizer = SqlLexer(CharStreams.fromString(key))
-        val sqlOut = StringBuilder()
+        val sqlOutBuffer = StringBuilder()
+        val sqlPartsOut = mutableListOf<String>()
         val routes = mutableListOf<String>()
         var token: Token? = tokenizer.nextToken()
 
         while (token != null && token.type != SqlLexer.EOF) {
             when (token.type) {
                 SqlLexer.NAMED_PARAM -> {
-                    sqlOut.append("?")
+                    sqlPartsOut.add(sqlOutBuffer.toString())
+                    sqlOutBuffer.clear()
                     routes.add(token.text.substring(1))
                 }
                 SqlLexer.POSITIONAL_PARAM ->
                     throw IllegalArgumentException("Positional Arguments are Prohibited with the use of Bindings.")
-                else -> sqlOut.append(token.text)
+                else -> sqlOutBuffer.append(token.text)
             }
 
             token = tokenizer.nextToken()
         }
 
-        return sqlOut.toString() to { bindings ->
+        return sqlPartsOut.toTypedArray() to { bindings ->
             routes.map { route ->
                 if (route.contains('.')) {
                     val parts = SPLITTER.findAll(route).map { it.value }.iterator()

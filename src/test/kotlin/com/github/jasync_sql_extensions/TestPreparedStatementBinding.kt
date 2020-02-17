@@ -3,6 +3,8 @@ package com.github.jasync_sql_extensions
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.length
+import com.github.jasync_sql_extensions.data.Lang
+import com.github.jasync_sql_extensions.data.UserJson
 import com.google.common.util.concurrent.UncheckedExecutionException
 import extension.PostgresExtension
 import org.joda.time.DateTimeZone
@@ -104,6 +106,34 @@ class TestPreparedStatementBinding {
                 100000000L,
                 queryResult.rows[0].getDate(1)?.toDateTime(DateTimeZone.UTC)?.millis
         )
+    }
+
+    @Test
+    fun beanJsonBinding(connection: Connection) {
+        val queryResult: QueryResult = connection.sendPreparedStatement("""
+            SELECT :b.name
+        """, mapOf(
+                "b" to UserJson(name = Lang("hello", "world"))
+        )).get()
+
+        Assertions.assertEquals(1, queryResult.rows.length)
+        Assertions.assertEquals(1, queryResult.rows[0].length)
+        Assertions.assertEquals( "{\"de\":\"hello\",\"en\":\"world\"}", queryResult.rows[0][0])
+    }
+
+    @Test
+    fun listBinding(connection: Connection) {
+        val queryResult: QueryResult = connection.sendPreparedStatement("""
+            SELECT 42 in :list0, 156 in :list1
+        """, mapOf(
+                "list0" to listOf(13, 156, 156, 1),
+                "list1" to listOf(45, 156, 156, 42)
+        )).get()
+
+        Assertions.assertEquals(1, queryResult.rows.length)
+        Assertions.assertEquals(2, queryResult.rows[0].length)
+        Assertions.assertEquals( false, queryResult.rows[0][0])
+        Assertions.assertEquals( true, queryResult.rows[0][1])
     }
 
     @Test

@@ -1,8 +1,11 @@
 package com.github.jasync_sql_extensions
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
+import com.github.jasync_sql_extensions.binding.SqlPreprocessor
 import com.github.jasync_sql_extensions.mapper.MapperCreator
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
 import com.google.common.cache.CacheBuilder
@@ -10,27 +13,57 @@ import com.google.common.cache.LoadingCache
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-private val preparedCache: LoadingCache<String, Pair<String, (Map<String, Any?>) -> List<Any?>>> = CacheBuilder.newBuilder()
+private val objectMapper = ObjectMapper().registerKotlinModule()
+
+private val preparedCache: LoadingCache<String, Pair<Array<String>, (Map<String, Any?>) -> List<Any?>>> = CacheBuilder.newBuilder()
         .maximumSize(1024)
         .expireAfterWrite(10, TimeUnit.MINUTES)
         .build(SqlPreprocessor)
 
 fun Connection.sendPreparedStatement(
         query: String,
-        args: Map<String, Any?>
+        args: Map<String, Any?>,
+        jsonMapper: (Any) -> String = objectMapper::writeValueAsString,
+        preprocessor: (String) -> Pair<Array<String>, (Map<String, Any?>) -> List<Any?>> = preparedCache::get
 ): CompletableFuture<QueryResult> {
-    val (positionalQuery, converter) = preparedCache[query]
+    val (queryParts, converter) = preprocessor(query)
 
-    return this.sendPreparedStatement(positionalQuery, converter(args))
+    val convertedArgs = converter(args).map {
+        it?.let {
+            if (it is Json) {
+                jsonMapper(it)
+            } else {
+                it
+            }
+        }
+    }
+
+    return this.sendPreparedStatement(
+            convertedArgs.zip(queryParts).joinToString(separator = "") { (argument, queryPart) ->
+                when (argument) {
+                    is Collection<*> -> queryPart + "( ${argument.joinToString(separator = ",") { " ? " }} )"
+                    else -> "$queryPart ? "
+                }
+            },
+            convertedArgs.flatMap {
+                when (it) {
+                    is Collection<*> -> it
+                    else -> listOf(it)
+                }
+            })
 }
 
 fun Connection.sendUncachedPreparedStatement(
         query: String,
-        args: Map<String, Any?>
+        args: Map<String, Any?>,
+        jsonMapper: (Any) -> String = objectMapper::writeValueAsString
 ): CompletableFuture<QueryResult> {
-    val (positionalQuery, converter) = SqlPreprocessor.load(query)
-
-    return this.sendPreparedStatement(positionalQuery, converter(args))
+    return this.sendPreparedStatement(
+            query = query,
+            args = args,
+            jsonMapper = jsonMapper,
+            preprocessor = SqlPreprocessor::load
+    )
 }
 
 fun String.toSnakeCased(): String {
@@ -51,5 +84,5 @@ inline fun <reified Bean : Any> ResultSet.mapTo(
         mapperCreator: MapperCreator = AsmMapperCreator
 ): List<Bean> {
     @Suppress("UNCHECKED_CAST")
-    return mapperCreator[Bean::class].map(this, prefix) as List<Bean>
+    return mapperCreator[Bean::class].map(this, prefix)
 }

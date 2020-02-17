@@ -3,6 +3,7 @@ package com.github.jasync_sql_extensions.mapper
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.util.length
+import com.github.jasync_sql_extensions.mapper.base.JsonMapper
 import com.github.jasync_sql_extensions.toSnakeCased
 import org.joda.time.DateTime
 import kotlin.reflect.KClass
@@ -93,7 +94,7 @@ abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
         )
 
         private val customMappers: MutableMap<KType, (RowData, Int) -> Any?> = mutableMapOf()
-        private val customComplexMappers: MutableList<ComplexMapper> = mutableListOf()
+        private val customComplexMappers: MutableList<ComplexMapper> = mutableListOf(JsonMapper)
 
         fun findMapper(type: KType): ((RowData, Int) -> Any?)? = primitiveMappers[type]
                 ?: customMappers[type]

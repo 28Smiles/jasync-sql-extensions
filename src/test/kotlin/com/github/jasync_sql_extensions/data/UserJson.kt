@@ -5,7 +5,7 @@ package com.github.jasync_sql_extensions.data
  * @since 11.02.2020
  */
 data class UserJson(
-        val id: Long?,
+        val id: Long? = null,
         val name: Lang,
-        val shortName: String?
+        val shortName: String? = null
 )

@@ -1,6 +1,6 @@
 package com.github.jasync_sql_extensions.data
 
-import com.github.jasync_sql_extensions.mapper.JsonMapper
+import com.github.jasync_sql_extensions.Json
 
 /**
  * @author Leon Camus
@@ -9,4 +9,4 @@ import com.github.jasync_sql_extensions.mapper.JsonMapper
 data class Lang(
         val de: String,
         val en: String
-): JsonMapper.Json
+): Json

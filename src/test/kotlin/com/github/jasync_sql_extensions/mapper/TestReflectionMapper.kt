@@ -324,7 +324,6 @@ class TestReflectionMapper {
                 SELECT * FROM "user" ORDER BY id
             """).get().rows
 
-            Mapper.register(JsonMapper)
             val users = resultSet.mapTo<UserJson>(
                     mapperCreator = mapperCreator
             )
