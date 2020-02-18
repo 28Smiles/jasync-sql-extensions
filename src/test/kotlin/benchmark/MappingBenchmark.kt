@@ -44,10 +44,17 @@ class MappingBenchmark {
         }.toList()
 
         val timeMillis = System.currentTimeMillis()
-        users.map { user ->
+        users.chunked(4096).map { userChunk ->
+            val query = StringBuilder()
+            query.append("INSERT INTO \"user\" (id, name, short_name) VALUES ")
+            query.append(userChunk.mapIndexed { index, user ->
+                "(:user$index.id, :user$index.name, :user$index.shortName)"
+            }.joinToString(","))
+            query.append(";")
+
             connection.sendPreparedStatement(
-                    "INSERT INTO \"user\" (id, name, short_name) VALUES (:user.id, :user.name, :user.shortName);",
-                    mapOf("user" to user)
+                    query.toString(),
+                    userChunk.mapIndexed { index, user -> "user$index" to user }.toMap()
             )
         }.forEach { it.get() }
         println("Insert of $amount users took: ${System.currentTimeMillis() - timeMillis}")

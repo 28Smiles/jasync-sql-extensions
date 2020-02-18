@@ -40,9 +40,6 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform {
-        excludeTags 'benchmark'
-    }
     testLogging {
         exceptionFormat = 'full'
     }
