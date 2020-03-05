@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
+import com.github.jasync.sql.db.RowData
 import com.github.jasync_sql_extensions.binding.SqlPreprocessor
 import com.github.jasync_sql_extensions.mapper.MapperCreator
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
@@ -86,9 +87,18 @@ fun String.toSnakeCased(): String {
 }
 
 inline fun <reified Bean : Any> ResultSet.mapTo(
-        prefix: String = "",
-        mapperCreator: MapperCreator = AsmMapperCreator
+    prefix: String = "",
+    mapperCreator: MapperCreator = AsmMapperCreator
 ): List<Bean> {
     @Suppress("UNCHECKED_CAST")
     return mapperCreator[Bean::class].map(this, prefix)
+}
+
+inline fun <reified Bean : Any> List<RowData>.mapTo(
+    columnNames: List<String>,
+    prefix: String = "",
+    mapperCreator: MapperCreator = AsmMapperCreator
+): List<Bean> {
+    @Suppress("UNCHECKED_CAST")
+    return mapperCreator[Bean::class].map(this, columnNames, prefix)
 }

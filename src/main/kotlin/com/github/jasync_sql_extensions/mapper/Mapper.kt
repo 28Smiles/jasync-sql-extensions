@@ -37,19 +37,31 @@ abstract class Mapper<Bean : Any>(clazz: KClass<Bean>) {
     }
 
     fun map(resultSet: ResultSet, prefix: String = ""): List<Bean> {
-        val columnNames = resultSet.columnNames().mapIndexed { i, s -> s to i }.toMap()
-        val columnIds: Array<Int?> = Array(parameterInformation.size) { i ->
-            columnNames[prefix + parameterInformation[i].snakeCasedName]
-                    ?: if (parameterInformation[i].isNullable || parameterInformation[i].isOptional) null
-                    else throw NullPointerException(
-                            "No column found for ${parameterInformation[i].name}" +
-                                    " and parameter is not marked as optional nor nullable.")
-        }
-
-        return doMap(resultSet, columnIds)
+        return map(
+            resultSet,
+            resultSet.columnNames(),
+            prefix
+        )
     }
 
-    private fun doMap(resultSet: ResultSet, columnIds: Array<Int?>): List<Bean> {
+    fun map(
+        rowData: List<RowData>,
+        columnNames: List<String>,
+        prefix: String = ""
+    ): List<Bean> {
+        val colNames = columnNames.mapIndexed { i, s -> s to i }.toMap()
+        val columnIds: Array<Int?> = Array(parameterInformation.size) { i ->
+            colNames[prefix + parameterInformation[i].snakeCasedName]
+                ?: if (parameterInformation[i].isNullable || parameterInformation[i].isOptional) null
+                else throw NullPointerException(
+                    "No column found for ${parameterInformation[i].name}" +
+                        " and parameter is not marked as optional nor nullable.")
+        }
+
+        return doMap(rowData, columnIds)
+    }
+
+    private fun doMap(resultSet: List<RowData>, columnIds: Array<Int?>): List<Bean> {
         // Calculate enabled optionals
         var optionals = 0
         columnIds.zip(mappers).forEachIndexed { index, param ->

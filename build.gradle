@@ -4,7 +4,7 @@ plugins {
 }
 
 group "com.github.28Smiles"
-version "0.4.1"
+version "0.4.2"
 
 repositories {
     jcenter()
@@ -89,7 +89,7 @@ if ("true" == System.getenv("DEPLOYER")) {
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
                 repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                    authentication(userName: username, password: password)
+                    authentication(userName: "", password: "password")
                 }
 
                 jar {
