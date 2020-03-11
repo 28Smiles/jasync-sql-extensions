@@ -80,7 +80,7 @@ private val fieldCache: LoadingCache<Pair<KClass<*>, String>, KProperty1.Getter<
             override fun load(key: Pair<KClass<*>, String>): KProperty1.Getter<out Any, Any?> {
                 return (key.first.memberProperties.find {
                     it.name == key.second
-                } ?: throw IllegalArgumentException()).getter
+                } ?: throw IllegalArgumentException("Field with name ${key.second} not found on class ${key.first}")).getter
             }
         })
 
