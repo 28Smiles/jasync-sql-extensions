@@ -27,10 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
 import kotlin.reflect.full.starProjectedType
 
-/**
- * @author Leon Camus
- * @since 10.02.2020
- */
 @ExtendWith(PostgresExtension::class)
 class TestReflectionMapper {
     val mapperCreator: MapperCreator = ReflectionMapperCreator

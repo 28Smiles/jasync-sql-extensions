@@ -2,6 +2,7 @@ package com.github.jasync_sql_extensions.mapper.asm
 
 import com.github.jasync_sql_extensions.mapper.Mapper
 import com.github.jasync_sql_extensions.mapper.MapperCreator
+import com.github.jasync_sql_extensions.mapper.MapperCreator.CreatorIdentifier
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
@@ -10,15 +11,11 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import kotlin.reflect.KClass
 
-/**
- * @author Leon Camus
- * @since 10.02.2020
- */
 object AsmMapperCreator: MapperCreator {
-    private val cache: LoadingCache<KClass<out Any>, Mapper<out Any>> =
+    private val cache: LoadingCache<CreatorIdentifier<out Any>, Mapper<out Any>> =
             CacheBuilder.newBuilder()
-                    .build(object : CacheLoader<KClass<out Any>, Mapper<out Any>>() {
-                        override fun load(key: KClass<out Any>): Mapper<out Any> {
+                    .build(object : CacheLoader<CreatorIdentifier<out Any>, Mapper<out Any>>() {
+                        override fun load(key: CreatorIdentifier<out Any>): Mapper<out Any> {
                             return MapperSynthesizer.synthesize(key)
                         }
                     })
@@ -35,7 +32,8 @@ object AsmMapperCreator: MapperCreator {
     )
 
     @Suppress("UNCHECKED_CAST")
-    override fun <Bean: Any>get(clazz: KClass<Bean>): Mapper<Bean> = cache[clazz] as Mapper<Bean>
+    override fun <Bean: Any>get(creatorIdentifier: CreatorIdentifier<Bean>): Mapper<Bean>
+        = cache[creatorIdentifier] as Mapper<Bean>
 
     fun unbox(boxed: Class<*>, unboxed: Type, method: String): (MethodVisitor) -> Unit = { visitor ->
         visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(boxed))

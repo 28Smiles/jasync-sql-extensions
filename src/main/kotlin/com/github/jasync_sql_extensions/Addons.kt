@@ -8,11 +8,13 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync_sql_extensions.binding.SqlPreprocessor
 import com.github.jasync_sql_extensions.mapper.MapperCreator
+import com.github.jasync_sql_extensions.mapper.MapperCreator.CreatorIdentifier
 import com.github.jasync_sql_extensions.mapper.asm.AsmMapperCreator
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.LoadingCache
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
 private val objectMapper = ObjectMapper().registerKotlinModule()
 
@@ -91,14 +93,25 @@ inline fun <reified Bean : Any> ResultSet.mapTo(
     mapperCreator: MapperCreator = AsmMapperCreator
 ): List<Bean> {
     @Suppress("UNCHECKED_CAST")
-    return mapperCreator[Bean::class].map(this, prefix)
+    return mapperCreator[CreatorIdentifier(Bean::class)].map(this, prefix).asSequence().toList()
 }
 
-inline fun <reified Bean : Any> List<RowData>.mapTo(
+inline fun <reified Bean : Any> Iterable<RowData>.mapTo(
     columnNames: List<String>,
     prefix: String = "",
     mapperCreator: MapperCreator = AsmMapperCreator
 ): List<Bean> {
     @Suppress("UNCHECKED_CAST")
-    return mapperCreator[Bean::class].map(this, columnNames, prefix)
+    return mapperCreator[CreatorIdentifier(Bean::class)].map(this.iterator(), columnNames, prefix).asSequence().toList()
+}
+
+fun <Bean : Any> Iterator<RowData>.mapTo(
+    columnNames: List<String>,
+    beanClass: KClass<Bean>,
+    prefix: String = "",
+    specials: Set<String> = setOf(),
+    mapperCreator: MapperCreator = AsmMapperCreator
+): Iterator<Bean> {
+    @Suppress("UNCHECKED_CAST")
+    return mapperCreator[CreatorIdentifier(beanClass, specials)].map(this, columnNames, prefix)
 }

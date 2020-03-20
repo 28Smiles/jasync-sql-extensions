@@ -2,10 +2,6 @@ package com.github.jasync_sql_extensions.data;
 
 import java.util.Objects;
 
-/**
- * @author Leon Camus
- * @since 10.02.2020
- */
 public class JavaUser {
     private final Long id;
     private final String name;

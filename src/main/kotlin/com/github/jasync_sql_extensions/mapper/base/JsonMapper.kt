@@ -10,10 +10,6 @@ import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
 
-/**
- * @author Leon Camus
- * @since 10.02.2020
- */
 object JsonMapper: ComplexMapper {
     val mapper = ObjectMapper().registerKotlinModule()
 

@@ -13,10 +13,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
 
-/**
- * @author Leon Camus
- * @since 06.02.2020
- */
 @ExtendWith(PostgresExtension::class)
 class TestPreparedStatementBinding {
     @Test

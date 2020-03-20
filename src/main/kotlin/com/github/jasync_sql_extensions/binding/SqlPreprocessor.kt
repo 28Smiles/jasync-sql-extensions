@@ -11,10 +11,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
-/**
- * @author Leon Camus
- * @since 07.02.2020
- */
 object SqlPreprocessor : CacheLoader<String, Pair<Array<String>, (Map<String, Any?>) -> List<Any?>>>() {
     private val SPLITTER = "(\\.)|(\\?\\.)|([^[.|?.]]+)".toRegex()
     private val SAFE_CALL = "?."

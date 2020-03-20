@@ -27,10 +27,6 @@ import java.time.Instant
 import java.util.concurrent.ExecutionException
 import kotlin.reflect.full.starProjectedType
 
-/**
- * @author Leon Camus
- * @since 10.02.2020
- */
 @ExtendWith(PostgresExtension::class)
 class TestAsmMapper {
     val mapperCreator: MapperCreator = AsmMapperCreator
@@ -104,7 +100,7 @@ class TestAsmMapper {
         @Test
         fun testUnmappableBean() {
             try {
-                MapperSynthesizer.synthesize(Unmappable::class)
+                MapperSynthesizer.synthesize(MapperCreator.CreatorIdentifier(Unmappable::class, setOf()))
             } catch (e: InvocationTargetException) {
                 Assertions.assertEquals(NullPointerException::class, e.targetException::class)
                 return

@@ -15,10 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.stream.LongStream
 import kotlin.streams.toList
 
-/**
- * @author Leon Camus
- * @since 06.02.2020
- */
 @Tag("benchmark")
 @ExtendWith(PostgresExtension::class)
 class SmallMappingBenchmark {
@@ -92,7 +88,7 @@ class SmallMappingBenchmark {
         val users = mapper.map(resultSet)
         println("Reflection mapping of the select took: ${(System.nanoTime() - timeNanos) / 1000} us")
 
-        return users
+        return users.asSequence().toList()
     }
 
     fun mapASMCold(resultSet: ResultSet): List<User> {
