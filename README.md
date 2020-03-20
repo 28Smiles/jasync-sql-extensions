@@ -11,6 +11,7 @@
  - Data class mapping
    - Json mapping
    - Custom mapper support
+   - WIP: 1 to N, N to N and 1 to 1 support via dsl
 
  ## Getting Started
 [jasync-sql-extensions](https://github.com/28Smiles/jasync-sql-extensions) is based upon extension functions. So create a query using named bindings start like this:
