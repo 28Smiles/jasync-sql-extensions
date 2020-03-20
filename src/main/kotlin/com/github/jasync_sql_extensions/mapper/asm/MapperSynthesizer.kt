@@ -17,8 +17,7 @@ import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
 internal object MapperSynthesizer {
-    fun <Bean : Any> synthesize(creatorIdentifier: CreatorIdentifier<Bean>): Mapper<Bean> {
-        val className = "${creatorIdentifier.specials.joinToString("")}${creatorIdentifier.clazz.java.name}\$Mapper"
+    fun <Bean : Any> synthesize(creatorIdentifier: CreatorIdentifier<Bean>, className: String): Mapper<Bean> {
         val primaryConstructor = creatorIdentifier.clazz.primaryConstructor
             ?: throw NullPointerException("No primary constructor found, is $creatorIdentifier not a Kotlin Class?")
         val defaultConstructor = creatorIdentifier.clazz.java.constructors.find { constructor ->
@@ -177,14 +176,17 @@ internal object MapperSynthesizer {
                 if (javaType is Class<*>) {
                     AsmMapperCreator.javaBoxedToBase[type.javaType as Class<*>]?.let {
                         it(visitor)
-                    }
-                } else null ?: visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(
-                    when (javaType) {
-                        is ParameterizedType -> javaType.rawType as Class<*>
-                        is Class<*> -> javaType
-                        else -> throw IllegalStateException("Could not extract raw type of $javaType")
-                    }
-                ))
+                    } ?: visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(javaType))
+                } else {
+                    visitor.visitTypeInsn(
+                        Opcodes.CHECKCAST, Type.getInternalName(
+                        when (javaType) {
+                            is ParameterizedType -> javaType.rawType as Class<*>
+                            is Class<*> -> javaType
+                            else -> throw IllegalStateException("Could not extract raw type of $javaType")
+                        }
+                    ))
+                }
             } else {
                 visitor.visitInsn(Opcodes.ACONST_NULL)
             }

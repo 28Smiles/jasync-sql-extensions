@@ -100,7 +100,8 @@ class TestAsmMapper {
         @Test
         fun testUnmappableBean() {
             try {
-                MapperSynthesizer.synthesize(MapperCreator.CreatorIdentifier(Unmappable::class, setOf()))
+                MapperSynthesizer.synthesize(MapperCreator.CreatorIdentifier(Unmappable::class, setOf()),
+                                             "com.github.jasync_sql_extensions.mapper.UnmappableMapper")
             } catch (e: InvocationTargetException) {
                 Assertions.assertEquals(NullPointerException::class, e.targetException::class)
                 return

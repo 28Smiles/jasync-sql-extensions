@@ -35,11 +35,11 @@ class TestDsl {
             list[0]
         )
         Assertions.assertEquals(
-            Course(id = 2, semesterId = 3, semester = Semester(id = 1), subjectId = 1, subject = Subject(id = 1)),
+            Course(id = 2, semesterId = 3, semester = Semester(id = 3), subjectId = 1, subject = Subject(id = 1)),
             list[1]
         )
         Assertions.assertEquals(
-            Course(id = 3, semesterId = 4, semester = Semester(id = 1), subjectId = 3, subject = Subject(id = 1)),
+            Course(id = 3, semesterId = 4, semester = Semester(id = 4), subjectId = 3, subject = Subject(id = 3)),
             list[2]
         )
     }

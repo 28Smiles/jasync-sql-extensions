@@ -16,7 +16,14 @@ object AsmMapperCreator: MapperCreator {
             CacheBuilder.newBuilder()
                     .build(object : CacheLoader<CreatorIdentifier<out Any>, Mapper<out Any>>() {
                         override fun load(key: CreatorIdentifier<out Any>): Mapper<out Any> {
-                            return MapperSynthesizer.synthesize(key)
+                            val className = "${key.clazz.java.packageName}.${key.specials.sorted().joinToString("")}${key.clazz.java.name.substringAfterLast(".")}\$Mapper"
+                            return try {
+                                val clazz = Class.forName(className) as Class<Mapper<out Any>>
+                                clazz.getConstructor(KClass::class.java, Set::class.java)
+                                    .newInstance(key.clazz, key.specials)
+                            } catch (e: ClassNotFoundException) {
+                                MapperSynthesizer.synthesize(key, className)
+                            }
                         }
                     })
 

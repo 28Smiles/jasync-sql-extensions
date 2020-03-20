@@ -158,7 +158,7 @@ class TestReflectionMapper {
 
             val users = resultSet.mapTo<User>(
                     prefix = "user_",
-                    mapperCreator = AsmMapperCreator
+                    mapperCreator = ReflectionMapperCreator
             )
 
             Assertions.assertEquals(User(1, "alfred", "alf"), users[0])
