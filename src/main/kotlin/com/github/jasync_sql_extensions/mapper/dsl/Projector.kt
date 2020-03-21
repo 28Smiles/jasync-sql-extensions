@@ -49,7 +49,7 @@ data class Projector<T : Any>(
             override fun next(ignoreIndex: Boolean): T? {
                 val nextRow = slider.next(ignoreIndex)
 
-                return if (nextRow != null) {
+                return if (nextRow != null && prefixedIndex?.let { nextRow[it] != null } != false) {
                     for (i in collected.indices) {
                         projectors[i].next(ignoreIndex = true)?.let { value ->
                             collected[i].add(value)
